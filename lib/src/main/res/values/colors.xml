@@ -1,0 +1,7 @@
+<resources>
+    <color name="edit_text_gray">#E5E5E5</color>
+    <color name="white">#FFFFFF</color>
+    <color name="text_color">#707070</color>
+    <color name="bg_color">#E0E7EC</color>
+    <color name="semi_bg_color">#D0E0E7EC</color>
+</resources>

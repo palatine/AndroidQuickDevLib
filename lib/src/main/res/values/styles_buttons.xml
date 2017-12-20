@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BlueButton" parent="@android:style/Widget.Button">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:minHeight">30dp</item>
+        <item name="android:minWidth">40dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:paddingBottom">9dp</item>
+        <item name="android:paddingLeft">15dp</item>
+        <item name="android:paddingRight">15dp</item>
+        <item name="android:paddingTop">9dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical|center_horizontal</item>
+    </style>
+
+    <style name="DarkButton" parent="@style/BlueButton">
+        <item name="android:background">@drawable/negative_round_button</item>
+    </style>
+
+    <style name="YellowButton" parent="@style/BlueButton">
+        <item name="android:background">@drawable/positive_round_button</item>
+    </style>
+
+</resources>

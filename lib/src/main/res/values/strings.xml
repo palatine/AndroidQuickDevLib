@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BaseLib</string>
+    <string name="str_positive">是</string>
+    <string name="str_negative">否</string>
+    <string name="str_neutral">取消</string>    
+    <string name="confirm">确定</string>   
+    <string name="version_too_old">当前版本太旧，下载新版本后方可继续使用。</string>
+    <string name="version_need_upgrade">程序有更新，是否下载新版本？</string>  
+    <string name="submit">提交</string>
+    <string name="submit_success_thanks">提交成功,谢谢您的支持!</string>
+    <string name="no_spec">不限</string>
+    <string name="query_reconnect">连接网络失败，是否重试？</string>
+    <string name="retrieve_sms_code">获取验证码</string>
+    <string name="to_receive_sms">短信已发送，请注意查收。</string>
+    <string name="app_crashed_tips">程序遇到错误出了，错误报告已经提交，我们将尽快修复这一问题。</string>
+    <string name="app_error_due_to_permission">重新设置程序的访问权限后，才能正常使用。</string>
+    <string name="restarting">Restarting...</string>
+    <string name="app_error_tips">程序遇到错误需要重启, 对此引起的不便表示抱歉! 我们将尽快修复这一问题.</string>
+    <string name="app_exit_tips">再次按下Back键以退出程序.</string>
+</resources>

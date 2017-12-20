@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_margin="@dimen/actionBarPadding"
+              android:background="?attr/colorPrimary"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/action_bar_left_image_button"
+        android:layout_width="@dimen/actionBarButtonWidth"
+        android:layout_height="@dimen/actionBarButtonHeight"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/action_bar_left_image"/>
+
+    <TextView
+        android:id="@+id/action_bar_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:lines="1"
+        android:textSize="@dimen/actionBarTitleTextSize"
+        />
+
+    <ImageButton
+        android:id="@+id/action_bar_right_image_button"
+        android:layout_width="@dimen/actionBarButtonWidth"
+        android:layout_height="@dimen/actionBarButtonHeight"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:src="@drawable/action_bar_left_image"
+        android:visibility="invisible"/>
+
+</LinearLayout>
