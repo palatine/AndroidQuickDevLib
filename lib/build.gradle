@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.github.dcendents.android-maven'
 
 group = 'com.github.palatine'
@@ -10,7 +9,7 @@ repositories {
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    buildToolsVersion "26.0.2"
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 23
@@ -38,7 +37,7 @@ dependencies {
     compile 'com.loopj.android:android-async-http:1.4.9'
 
     // for fragmentation
-    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:appcompat-v7:25.4.0'
     compile 'me.yokeyword:fragmentation:0.8.6'
 
     // indicator
