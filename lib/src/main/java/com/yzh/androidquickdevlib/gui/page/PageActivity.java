@@ -2,8 +2,8 @@ package com.yzh.androidquickdevlib.gui.page;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransactionBugFixHack;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -15,6 +15,9 @@ import com.yzh.androidquickdevlib.app.exceptionhandler.RestartAppTask;
 import com.yzh.androidquickdevlib.task.ThreadUtility;
 import com.yzh.androidquickdevlib.utils.ResUtils;
 import com.yzh.androidquickdevlib.utils.T;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import me.yokeyword.fragmentation.SupportActivity;
 
@@ -30,9 +33,14 @@ abstract public class PageActivity extends SupportActivity {
     protected static PageActivity sCurrentPageActivity = null;
 
     /**
-     *
+     * inputer
      */
     private InputMethodManager mInputMethodManager;
+
+    /**
+     * pending stack
+     */
+    private final List<Runnable> mPopBackStackRunnable = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +51,6 @@ abstract public class PageActivity extends SupportActivity {
         sCurrentPageActivity = this;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //        // 记录当前的page activity
-        //        sCurrentPageActivity = this;
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // 当前的page activity被执行onSaveInstanceState
-        //        if (sCurrentPageActivity == this) {
-        //            sCurrentPageActivity = null;
-        //        }
-    }
 
     @Override
     protected void onDestroy() {
@@ -66,36 +59,6 @@ abstract public class PageActivity extends SupportActivity {
         if (sCurrentPageActivity == this) {
             sCurrentPageActivity = null;
         }
-    }
-
-    @Override
-    public void setRequestedOrientation(int requestedOrientation) {
-        super.setRequestedOrientation(requestedOrientation);
-        try {
-            notifyOnConfigurationChanged();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        Log.i("PageActivity", "App reset orientation [" + requestedOrientation + "]!");
-    }
-
-    /**
-     * 当Activity的Configuration发生改变的时候, 通知所有Fragment
-     *
-     * @deprecated
-     */
-    protected void notifyOnConfigurationChanged() {
-        final Configuration configuration = getResources().getConfiguration();
-        Log.d("111", "configuration changed" + configuration.orientation);
-        // DDT
-        //        for (int i = 0; i < get.size(); i++) {
-        //            Fragment fragment = mPageStacks.get(i)
-        //                    .getRootFragment();
-        //            if (fragment != null) {
-        //                fragment.onConfigurationChanged(configuration);
-        //            }
-        //        }
     }
 
     @Override
@@ -126,6 +89,11 @@ abstract public class PageActivity extends SupportActivity {
      * @param addOrReplace
      */
     private void _setPage(ActivityPage page, boolean addOrReplace) {
+        if (isStatedSaved()) {
+            addToPopBackStackRunnable(() -> _setPage(page, addOrReplace));
+            return;
+        }
+
         if (!addOrReplace) {
             startWithPop(page.getSupportFragment());
         }
@@ -143,6 +111,11 @@ abstract public class PageActivity extends SupportActivity {
      * @param force 当为true的时候, 强制退回上一页无论{@link PageFragmentation#onGoPreviousPage()} 结果如何
      */
     protected void _goPreviousPage(boolean force) {
+        if (isStatedSaved()) {
+            addToPopBackStackRunnable(() -> _goPreviousPage(force));
+            return;
+        }
+
         if (force) {
             onBackPressedSupport();
         }
@@ -180,6 +153,11 @@ abstract public class PageActivity extends SupportActivity {
      * @param page
      */
     private void _loadRootPage(ActivityPage page) {
+        if (isStatedSaved()) {
+            addToPopBackStackRunnable(() -> _loadRootPage(page));
+            return;
+        }
+
         loadRootFragment(R.id.fm_container, page.getSupportFragment());
     }
 
@@ -189,6 +167,11 @@ abstract public class PageActivity extends SupportActivity {
      * @param page
      */
     private void _replaceRootPage(ActivityPage page) {
+        if (isStatedSaved()) {
+            addToPopBackStackRunnable(() -> _replaceRootPage(page));
+            return;
+        }
+
         replaceLoadRootFragment(R.id.fm_container, page.getSupportFragment(), true);
     }
 
@@ -202,6 +185,47 @@ abstract public class PageActivity extends SupportActivity {
         }
         else {
             new ExitAppTask(this).doTask();
+        }
+    }
+
+    /**
+     * 是否当前状态已经被保存
+     *
+     * @return
+     */
+    private boolean isStatedSaved() {
+        return FragmentTransactionBugFixHack.isStateSaved(getSupportFragmentManager());
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        executeOnPostResumeTasks();
+    }
+
+    /**
+     * execute the pending task after post resume
+     */
+    protected void executeOnPostResumeTasks() {
+        for (Runnable runnable : this.mPopBackStackRunnable) {
+            try {
+                runnable.run();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        this.mPopBackStackRunnable.clear();
+    }
+
+    /**
+     * 添加到待执行列表
+     *
+     * @param runnable
+     */
+    private void addToPopBackStackRunnable(Runnable runnable) {
+        if (runnable != null && !this.mPopBackStackRunnable.contains(runnable)) {
+            this.mPopBackStackRunnable.add(runnable);
         }
     }
 
@@ -427,7 +451,7 @@ abstract public class PageActivity extends SupportActivity {
      *
      * @param throwable
      */
-    private static void reportError(Throwable throwable) {
+    protected static void reportError(Throwable throwable) {
         try {
             if (BaseApplication.instance() != null) {
                 //                AnalyticsUtils.getInstance()
@@ -444,8 +468,8 @@ abstract public class PageActivity extends SupportActivity {
     /**
      * 需要执行重启
      */
-    private static void restart() {
-        if (RestartAppTask.doTask(APP_ERR_MSG + APP_ERR_OPERATION_RESTART_AUTO_MSG, 2500)) {
+    protected static void restart() {
+        if (!RestartAppTask.doTask(APP_ERR_MSG + APP_ERR_OPERATION_RESTART_AUTO_MSG, 2500)) {
             try {
                 T.showLong(APP_ERR_MSG + APP_ERR_OPERATION_RESTART_MANUAL_MSG);
             }
