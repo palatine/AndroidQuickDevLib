@@ -54,7 +54,7 @@ public abstract class PageFragmentation extends SupportFragment implements Activ
      */
     @Override
     @CallSuper
-    protected void onEnterAnimationEnd(Bundle savedInstanceState) {
+    public void onEnterAnimationEnd(Bundle savedInstanceState) {
         // 这个方法仅在第一次入栈的时候调用(动画执行完毕时)
         super.onEnterAnimationEnd(savedInstanceState);
         //执行resumePage更新界面

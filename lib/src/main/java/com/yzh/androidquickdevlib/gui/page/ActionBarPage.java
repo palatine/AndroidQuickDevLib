@@ -81,7 +81,8 @@ public abstract class ActionBarPage extends PageFragmentation implements IFragme
                 this.mTitleView.setText(onSetupPageTitle());
                 // only for test
                 if (sShowFragmentStackWhenClickActionBar) {
-                    this.mTitleView.setOnClickListener(v -> ((SupportActivity) getActivity()).showFragmentStackHierarchyView());
+                    this.mTitleView.setOnClickListener(v -> ((SupportActivity) getActivity()).getSupportDelegate()
+                            .showFragmentStackHierarchyView());
                 }
             }
         }

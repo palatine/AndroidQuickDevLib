@@ -3,7 +3,6 @@ package com.yzh.androidquickdevlib.gui.page;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransactionBugFixHack;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -16,9 +15,7 @@ import com.yzh.androidquickdevlib.task.ThreadUtility;
 import com.yzh.androidquickdevlib.utils.ResUtils;
 import com.yzh.androidquickdevlib.utils.T;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import me.yokeyword.fragmentation.ISupportFragment;
 import me.yokeyword.fragmentation.SupportActivity;
 
 abstract public class PageActivity extends SupportActivity {
@@ -36,11 +33,6 @@ abstract public class PageActivity extends SupportActivity {
      * inputer
      */
     private InputMethodManager mInputMethodManager;
-
-    /**
-     * pending stack
-     */
-    private final List<Runnable> mPopBackStackRunnable = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,11 +81,6 @@ abstract public class PageActivity extends SupportActivity {
      * @param addOrReplace
      */
     private void _setPage(ActivityPage page, boolean addOrReplace) {
-        if (isStatedSaved()) {
-            addToPopBackStackRunnable(() -> _setPage(page, addOrReplace));
-            return;
-        }
-
         if (!addOrReplace) {
             startWithPop(page.getSupportFragment());
         }
@@ -111,11 +98,6 @@ abstract public class PageActivity extends SupportActivity {
      * @param force 当为true的时候, 强制退回上一页无论{@link PageFragmentation#onGoPreviousPage()} 结果如何
      */
     protected void _goPreviousPage(boolean force) {
-        if (isStatedSaved()) {
-            addToPopBackStackRunnable(() -> _goPreviousPage(force));
-            return;
-        }
-
         if (force) {
             onBackPressedSupport();
         }
@@ -133,7 +115,8 @@ abstract public class PageActivity extends SupportActivity {
      * @return
      */
     private boolean _hasPage(ActivityPage page) {
-        return findFragment(page.getFragmentTag()) != null;
+        return findFragment(page.getSupportFragment()
+                .getClass()) != null;
     }
 
     /**
@@ -142,9 +125,9 @@ abstract public class PageActivity extends SupportActivity {
      * @param pageClass
      * @return
      */
-    private boolean _hasPage(Class<?> pageClass) {
+    private boolean _hasPage(Class<? extends ISupportFragment> pageClass) {
         // support fragment 默认是使用getClass().getName作为tag
-        return findFragment(pageClass.getName()) != null;
+        return findFragment(pageClass) != null;
     }
 
     /**
@@ -153,11 +136,6 @@ abstract public class PageActivity extends SupportActivity {
      * @param page
      */
     private void _loadRootPage(ActivityPage page) {
-        if (isStatedSaved()) {
-            addToPopBackStackRunnable(() -> _loadRootPage(page));
-            return;
-        }
-
         loadRootFragment(R.id.fm_container, page.getSupportFragment());
     }
 
@@ -167,12 +145,7 @@ abstract public class PageActivity extends SupportActivity {
      * @param page
      */
     private void _replaceRootPage(ActivityPage page) {
-        if (isStatedSaved()) {
-            addToPopBackStackRunnable(() -> _replaceRootPage(page));
-            return;
-        }
-
-        replaceLoadRootFragment(R.id.fm_container, page.getSupportFragment(), true);
+        loadRootFragment(R.id.fm_container, page.getSupportFragment(), true, false);
     }
 
     @Override
@@ -189,53 +162,13 @@ abstract public class PageActivity extends SupportActivity {
     }
 
     /**
-     * 是否当前状态已经被保存
-     *
-     * @return
-     */
-    private boolean isStatedSaved() {
-        return FragmentTransactionBugFixHack.isStateSaved(getSupportFragmentManager());
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        executeOnPostResumeTasks();
-    }
-
-    /**
-     * execute the pending task after post resume
-     */
-    protected void executeOnPostResumeTasks() {
-        for (Runnable runnable : this.mPopBackStackRunnable) {
-            try {
-                runnable.run();
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        this.mPopBackStackRunnable.clear();
-    }
-
-    /**
-     * 添加到待执行列表
-     *
-     * @param runnable
-     */
-    private void addToPopBackStackRunnable(Runnable runnable) {
-        if (runnable != null && !this.mPopBackStackRunnable.contains(runnable)) {
-            this.mPopBackStackRunnable.add(runnable);
-        }
-    }
-
-    /**
      * 获取当前正在显示的fragment
      *
      * @return
      */
     public android.support.v4.app.Fragment _getCurrentPage() {
-        return getTopFragment();
+        final ISupportFragment top = getTopFragment();
+        return top instanceof ActivityPage ? ((ActivityPage) top).getSupportFragment() : null;
     }
 
     /**
@@ -362,7 +295,7 @@ abstract public class PageActivity extends SupportActivity {
      * @param pageClass
      * @return
      */
-    public static boolean hasPage(Class<?> pageClass) {
+    public static boolean hasPage(Class<? extends ISupportFragment> pageClass) {
         boolean has = false;
         try {
             has = sCurrentPageActivity._hasPage(pageClass);
@@ -385,7 +318,7 @@ abstract public class PageActivity extends SupportActivity {
         try {
             result = sCurrentPageActivity._hasPage(page);
             if (result) {
-                sCurrentPageActivity.popTo(page.getFragmentTag(), includeSelf, afterTransaction);
+                sCurrentPageActivity.popTo(page.getClass(), includeSelf, afterTransaction);
             }
         }
         catch (Exception e) {
@@ -401,7 +334,7 @@ abstract public class PageActivity extends SupportActivity {
      * @param pageClass
      * @return 是否找到该页面
      */
-    public static boolean popToPage(Class<?> pageClass, boolean includeSelf, Runnable afterTransaction) {
+    public static boolean popToPage(Class<? extends ISupportFragment> pageClass, boolean includeSelf, Runnable afterTransaction) {
         boolean result = false;
         try {
             result = sCurrentPageActivity._hasPage(pageClass);
