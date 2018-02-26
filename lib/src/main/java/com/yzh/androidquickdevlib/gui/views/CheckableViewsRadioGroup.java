@@ -145,23 +145,17 @@ public class CheckableViewsRadioGroup extends LinearLayout implements ICheckable
      * @param view
      */
     private void addChildViewRecursively(View view) {
-        if (view == null) {
-            return;
-        }
+        if (view instanceof Checkable) {
+            final int id = getViewId(view);
+            final Checkable checkable = (Checkable) view;
+            this.mChildrens.put(id, checkable);
 
-        if (view instanceof View) {
-            if (view instanceof Checkable) {
-                final int id = getViewId(view);
-                final Checkable checkable = (Checkable) view;
-                this.mChildrens.put(id, checkable);
-
-                // 如果是选择状态的话, 需要重新设置下
-                if (checkable.isChecked()) {
-                    setCheckedIdInternal(id);
-                }
-                // 接管监听事件
-                view.setOnClickListener(this.mDelegateOnClickListener);
+            // 如果是选择状态的话, 需要重新设置下
+            if (checkable.isChecked()) {
+                setCheckedIdInternal(id);
             }
+            // 接管监听事件
+            view.setOnClickListener(this.mDelegateOnClickListener);
         }
         else if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
