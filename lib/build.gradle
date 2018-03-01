@@ -38,7 +38,7 @@ dependencies {
 
     // for fragmentation
     compile 'com.android.support:appcompat-v7:25.4.0'
-    compile 'me.yokeyword:fragmentation:1.2.5'
+    compile 'me.yokeyword:fragmentation:1.2.7'
 
     // indicator
     compile 'com.wang.avi:library:2.1.3'
