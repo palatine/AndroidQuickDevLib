@@ -27,4 +27,6 @@
     <dimen name="actionBarButtonWidth">51.6dp</dimen>
     <dimen name="actionBarButtonHeight">43dp</dimen>
     <dimen name="actionBarTitleTextSize">18sp</dimen>
+
+    <dimen name="statusBarHeight">24dp</dimen>
 </resources>
